@@ -21,7 +21,9 @@ class Mutation extends Query
      */
     protected function constructSelectionSet(): string
     {
-        if (empty($this->selectionSet)) return '';
+        if (empty($this->selectionSet) && empty($this->selectionQuery)) {
+            return '';
+        }
 
         return parent::constructSelectionSet();
     }

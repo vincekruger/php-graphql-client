@@ -14,14 +14,22 @@ trait FieldTrait
     protected $selectionSet;
 
     /**
+     * Stores the selection set desired to get from the query, can include nested queries
+     *
+     * @var RawObject
+     */
+    protected $selectionQuery;
+
+    /**
      * @param array $selectionSet
      *
      * @return $this
+     *
      * @throws InvalidSelectionException
      */
     public function setSelectionSet(array $selectionSet)
     {
-        $nonStringsFields = array_filter($selectionSet, function($element) {
+        $nonStringsFields = array_filter($selectionSet, function ($element) {
             return !is_string($element) && !$element instanceof Query && !$element instanceof InlineFragment;
         });
         if (!empty($nonStringsFields)) {
@@ -36,12 +44,30 @@ trait FieldTrait
     }
 
     /**
+     * @param RawObject $object
+     *
+     * @return $this
+     */
+    public function setSelectionQuery(RawObject $object)
+    {
+        $this->selectionQuery = $object;
+
+        return $this;
+    }
+
+    /**
      * @return string
      */
     protected function constructSelectionSet(): string
     {
-        $attributesString = " {" . PHP_EOL;
-        $first            = true;
+        /// Raw selection query
+        if (!empty($this->selectionQuery)) {
+            return (string) $this->selectionQuery;
+        }
+
+        /// Construct selection query
+        $attributesString = ' {' . PHP_EOL;
+        $first = true;
         foreach ($this->selectionSet as $attribute) {
 
             // Append empty line at the beginning if it's not the first item on the list
@@ -59,7 +85,7 @@ trait FieldTrait
             // Append attribute to returned attributes list
             $attributesString .= $attribute;
         }
-        $attributesString .= PHP_EOL . "}";
+        $attributesString .= PHP_EOL . '}';
 
         return $attributesString;
     }
